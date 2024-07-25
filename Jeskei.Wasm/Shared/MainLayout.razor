@@ -1,0 +1,142 @@
+﻿@inherits LayoutComponentBase
+@inject AuthenticationStateProvider _siweAuthenticationStateProvider;
+
+<nav class="navbar navbar-expand navbar-light bg-white static-top osahan-nav sticky-top">
+    &nbsp;&nbsp;
+    <button class="btn btn-link btn-sm text-secondary order-1 order-sm-0" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button> &nbsp;&nbsp;
+    <a class="navbar-brand mr-1" href=""><img class="img-fluid" alt="" src="img/logo.png" width="100" style="max-width:60px;"></a>
+    <!-- Navbar Search -->
+    <form class="d-none d-md-inline-block form-inline ml-auto mr-0 mr-md-5 my-2 my-md-0 osahan-navbar-search">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search for...">
+            <div class="input-group-append">
+                <button class="btn btn-light" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+    <!-- Navbar -->
+    <ul class="navbar-nav ml-auto ml-md-0 osahan-right-navbar">
+        <li class="nav-item mx-1">
+            <a class="nav-link" href="upload-video">
+                <i class="fas fa-plus-circle fa-fw"></i>
+                Upload Video
+            </a>
+        </li>
+        <li class="nav-item dropdown no-arrow mx-1">
+            <a class="nav-link dropdown-toggle" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-bell fa-fw"></i>
+                <span class="badge badge-danger">9+</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="alertsDropdown">
+                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-edit "></i> &nbsp; Action</a>
+                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-headphones-alt "></i> &nbsp; Another action</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-star "></i> &nbsp; Something else here</a>
+            </div>
+        </li>
+        <li class="nav-item dropdown no-arrow mx-1">
+            <a class="nav-link dropdown-toggle" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-envelope fa-fw"></i>
+                <span class="badge badge-success">7</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="messagesDropdown">
+                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-edit "></i> &nbsp; Action</a>
+                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-headphones-alt "></i> &nbsp; Another action</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-star "></i> &nbsp; Something else here</a>
+            </div>
+        </li>
+        <li class="nav-item dropdown no-arrow osahan-right-navbar-user">
+            <a class="nav-link dropdown-toggle user-dropdown-link" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+                <Metamask />
+
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                <a class="dropdown-item" href="account.html"><i class="fas fa-fw fa-user-circle"></i> &nbsp; My Account</a>
+                <a class="dropdown-item" href="subscriptions.html"><i class="fas fa-fw fa-video"></i> &nbsp; Subscriptions</a>
+                <a class="dropdown-item" href="settings.html"><i class="fas fa-fw fa-cog"></i> &nbsp; Settings</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal"><i class="fas fa-fw fa-sign-out-alt"></i> &nbsp; Logout</a>
+            </div>
+        </li>
+    </ul>
+</nav>
+<div id="wrapper">
+
+    <div class="sidebar navbar-nav">
+        <NavMenu />
+    </div>
+
+    <div id="content-wrapper">
+        <div class="container-fluid pb-0">
+            <div class="top-mobile-search">
+                <div class="row">
+                    <div class="col-md-12">
+                        <form class="mobile-search">
+                            <div class="input-group">
+                                <input type="text" placeholder="Search for..." class="form-control">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-dark"><i class="fas fa-search"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @Body
+
+        </div>
+        <!-- /.container-fluid -->
+        <!-- Sticky Footer -->
+        <footer class="sticky-footer">
+            <div class="container">
+                <div class="row no-gutters">
+                    <div class="col-lg-6 col-sm-6">
+                        <p class="mt-1 mb-0">
+                            &copy; Copyright 2020 <strong class="text-dark">Jeskei</strong>. All Rights Reserved<br>
+                            <small class="mt-0 mb-0">
+                                Made with <i class="fas fa-heart text-danger"></i> by <a class="text-primary" target="_blank" href="https://jeskei.com/">Ask Jeskei</a>
+                            </small>
+                        </p>
+                    </div>
+                    <div class="col-lg-6 col-sm-6 text-right">
+                        <div class="app">
+                            <a href="#"><img alt="" src="img/google.png"></a>
+                            <a href="#"><img alt="" src="img/apple.png"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <!-- /.content-wrapper -->
+</div>
+<!-- /#wrapper -->
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+<!-- Logout Modal-->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <a class="btn btn-primary" href="login.html">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
