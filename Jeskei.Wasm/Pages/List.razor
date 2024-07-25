@@ -1,0 +1,625 @@
+﻿@page "/list"
+@using Nethereum.ABI.EIP712
+@using Nethereum.ABI.FunctionEncoding.Attributes
+@using Nethereum.Erc20.Blazor;
+@implements IDisposable;
+@inject IJSRuntime jsRuntime;
+@inject SelectedEthereumHostProviderService selectedHostProviderService
+@inject NavigationManager _navigationManager
+@inject AuthenticationStateProvider _siweAuthenticationStateProvider;
+@using Nethereum.Hex.HexTypes;
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Nethereum.RPC.HostWallet
+@using Nethereum.Signer
+@using Nethereum.Signer.EIP712
+
+<AuthorizeView Roles="EthereumConnected">
+    <Authorized>
+        <div class="top-category section-padding mb-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="main-title">
+                        <div class="btn-group float-right right-action">
+                            <a href="#" class="right-action-link text-gray" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-star"></i> &nbsp; Top Rated</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-signal"></i> &nbsp; Viewed</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-times-circle"></i> &nbsp; Close</a>
+                            </div>
+                        </div>
+                        <h6>Channels Categories</h6>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="owl-carousel owl-carousel-category">
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s11.png" alt="">
+                                    <h6>Movies</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s10.png" alt="">
+                                    <h6>TV Series</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s1.png" alt="">
+                                    <h6>Gaming <span title="" data-placement="top" data-toggle="tooltip" data-original-title="Verified"><i class="fas fa-check-circle text-success"></i></span></h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s5.png" alt="">
+                                    <h6>Technology Tutorials</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s9.png" alt="">
+                                    <h6>Your Life</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s8.png" alt="">
+                                    <h6>Unboxing Cool</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s6.png" alt="">
+                                    <h6>Singing</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s7.png" alt="">
+                                    <h6>Cooking</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s3.png" alt="">
+                                    <h6>Traveling</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s12.png" alt="">
+                                    <h6>Education</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s2.png" alt="">
+                                    <h6>Pets</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s13.png" alt="">
+                                    <h6>Comedy <span title="" data-placement="top" data-toggle="tooltip" data-original-title="Verified"><i class="fas fa-check-circle text-success"></i></span></h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="category-item">
+                                <a href="#">
+                                    <img class="img-fluid" src="img/s4.png" alt="">
+                                    <h6>Lifestyle Advice</h6>
+                                    <p>74,853 views</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="video-block section-padding">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="main-title">
+                        <div class="btn-group float-right right-action">
+                            <a class="right-action-link text-gray" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Sort by <i class="fa fa-caret-down" aria-hidden="true"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-star"></i> &nbsp; Top Rated</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-signal"></i> &nbsp; Viewed</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-times-circle"></i> &nbsp; Close</a>
+                            </div>
+                        </div>
+                        <h6>Featured Videos</h6>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="video-card">
+                        <div class="video-card-image">
+                            <a class="play-icon" href="video-page"><i class="fas fa-play-circle"></i></a>
+                            <a href="video-page"><img class="img-fluid" src="img/v1.png" alt=""></a>
+                            <div class="time">3:50</div>
+                        </div>
+                        <div class="video-card-body">
+                            <div class="video-title">
+                                <a href="video-page">Living healthily in the great outdoors</a>
+                            </div>
+                            <div class="video-page text-success">
+                                Education  <a title="" data-placement="top" data-toggle="tooltip" href="video-page" data-original-title="Verified"><i class="fas fa-check-circle text-success"></i></a>
+                            </div>
+                            <div class="video-view">
+                                1.8M views &nbsp;<i class="fas fa-calendar-alt"></i> 11 Months ago
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="video-card">
+                        <div class="video-card-image">
+                            <a class="play-icon" href="video-page"><i class="fas fa-play-circle"></i></a>
+                            <a href="video-page"><img class="img-fluid" src="img/v2.png" alt=""></a>
+                            <div class="time">3:50</div>
+                        </div>
+                        <div class="video-card-body">
+                            <div class="video-title">
+                                <a href="video-page">Cops and Robbers - New series </a>
+                            </div>
+                            <div class="video-page text-success">
+                                TV Series  <a title="" data-placement="top" data-toggle="tooltip" href="video-page" data-original-title="Verified"><i class="fas fa-check-circle text-success"></i></a>
+                            </div>
+                            <div class="video-view">
+                                1.8M views &nbsp;<i class="fas fa-calendar-alt"></i> 11 Months ago
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="video-card">
+                        <div class="video-card-image">
+                            <a class="play-icon" href="video-page"><i class="fas fa-play-circle"></i></a>
+                            <a href="video-page"><img class="img-fluid" src="img/v3.png" alt=""></a>
+                            <div class="time">3:50</div>
+                        </div>
+                        <div class="video-card-body">
+                            <div class="video-title">
+                                <a href="video-page">Thunderworms out west</a>
+                            </div>
+                            <div class="video-page text-danger">
+                                Movies  <a title="" data-placement="top" data-toggle="tooltip" href="video-page" data-original-title="Unverified"><i class="fas fa-frown text-danger"></i></a>
+                            </div>
+                            <div class="video-view">
+                                1.8M views &nbsp;<i class="fas fa-calendar-alt"></i> 11 Months ago
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="video-card">
+                        <div class="video-card-image">
+                            <a class="play-icon" href="video-page"><i class="fas fa-play-circle"></i></a>
+                            <a href="video-page"><img class="img-fluid" src="img/v4.png" alt=""></a>
+                            <div class="time">3:50</div>
+                        </div>
+                        <div class="video-card-body">
+                            <div class="video-title">
+                                <a href="video-page">The London culture show</a>
+                            </div>
+                            <div class="video-page text-success">
+                                Education  <a title="" data-placement="top" data-toggle="tooltip" href="video-page" data-original-title="Verified"><i class="fas fa-check-circle text-success"></i></a>
+                            </div>
+                            <div class="video-view">
+                                1.8M views &nbsp;<i class="fas fa-calendar-alt"></i> 11 Months ago
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="video-card">
+                        <div class="video-card-image">
+                            <a class="play-icon" href="video-page"><i class="fas fa-play-circle"></i></a>
+                            <a href="video-page"><img class="img-fluid" src="img/v5.png" alt=""></a>
+                            <div class="time">3:50</div>
+                        </div>
+                        <div class="video-card-body">
+                            <div class="video-title">
+                                <a href="video-page">The cybercity - And adventure in cyberspace</a>
+                            </div>
+                            <div class="video-page text-success">
+                                Movies  <a title="" data-placement="top" data-toggle="tooltip" href="video-page" data-original-title="Verified"><i class="fas fa-check-circle text-success"></i></a>
+                            </div>
+                            <div class="video-view">
+                                1.8M views &nbsp;<i class="fas fa-calendar-alt"></i> 11 Months ago
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="video-card">
+                        <div class="video-card-image">
+                            <a class="play-icon" href="video-page"><i class="fas fa-play-circle"></i></a>
+                            <a href="video-page"><img class="img-fluid" src="img/v6.png" alt=""></a>
+                            <div class="time">3:50</div>
+                        </div>
+                        <div class="video-card-body">
+                            <div class="video-title">
+                                <a href="video-page">The Web 3.0 story - Blockchains destiny</a>
+                            </div>
+                            <div class="video-page text-danger">
+                                Education  <a title="" data-placement="top" data-toggle="tooltip" href="video-page" data-original-title="Unverified"><i class="fas fa-frown text-danger"></i></a>
+                            </div>
+                            <div class="video-view">
+                                1.8M views &nbsp;<i class="fas fa-calendar-alt"></i> 11 Months ago
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="video-card">
+                        <div class="video-card-image">
+                            <a class="play-icon" href="video-page"><i class="fas fa-play-circle"></i></a>
+                            <a href="video-page"><img class="img-fluid" src="img/v7.png" alt=""></a>
+                            <div class="time">3:50</div>
+                        </div>
+                        <div class="video-card-body">
+                            <div class="video-title">
+                                <a href="video-page">Building the Catalyst blockchain</a>
+                            </div>
+                            <div class="video-page text-success">
+                                Education  <a title="" data-placement="top" data-toggle="tooltip" href="video-page" data-original-title="Verified"><i class="fas fa-check-circle text-success"></i></a>
+                            </div>
+                            <div class="video-view">
+                                1.8M views &nbsp;<i class="fas fa-calendar-alt"></i> 11 Months ago
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="video-card">
+                        <div class="video-card-image">
+                            <a class="play-icon" href="video-page"><i class="fas fa-play-circle"></i></a>
+                            <a href="video-page"><img class="img-fluid" src="img/v8.png" alt=""></a>
+                            <div class="time">3:50</div>
+                        </div>
+                        <div class="video-card-body">
+                            <div class="video-title">
+                                <a href="video-page">Life on the streets of London</a>
+                            </div>
+                            <div class="video-page text-success">
+                                Education  <a title="" data-placement="top" data-toggle="tooltip" href="video-page" data-original-title="Verified"><i class="fas fa-check-circle text-success"></i></a>
+                            </div>
+                            <div class="video-view">
+                                1.8M views &nbsp;<i class="fas fa-calendar-alt"></i> 11 Months ago
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="mt-0">
+        <div class="video-block section-padding">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="main-title">
+                        <div class="btn-group float-right right-action">
+                            <a href="#" class="right-action-link text-gray" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Sort by <i class="fa fa-caret-down" aria-hidden="true"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-star"></i> &nbsp; Top Rated</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-signal"></i> &nbsp; Viewed</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-fw fa-times-circle"></i> &nbsp; Close</a>
+                            </div>
+                        </div>
+                        <h6>Popular Channels</h6>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="channels-card">
+                        <div class="channels-card-image">
+                            <a href="#"><img class="img-fluid" src="img/s1.png" alt=""></a>
+                            <div class="channels-card-image-btn"><button type="button" class="btn btn-outline-danger btn-sm">Subscribe <strong>1.4M</strong></button></div>
+                        </div>
+                        <div class="channels-card-body">
+                            <div class="channels-title">
+                                <a href="#">XBox Mars Man</a>
+                            </div>
+                            <div class="channels-view">
+                                382,323 subscribers
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="channels-card">
+                        <div class="channels-card-image">
+                            <a href="#"><img class="img-fluid" src="img/s2.png" alt=""></a>
+                            <div class="channels-card-image-btn"><button type="button" class="btn btn-outline-danger btn-sm">Subscribe <strong>1.4M</strong></button></div>
+                        </div>
+                        <div class="channels-card-body">
+                            <div class="channels-title">
+                                <a href="#">The Pet Trainer</a>
+                            </div>
+                            <div class="channels-view">
+                                382,323 subscribers
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="channels-card">
+                        <div class="channels-card-image">
+                            <a href="#"><img class="img-fluid" src="img/s3.png" alt=""></a>
+                            <div class="channels-card-image-btn"><button type="button" class="btn btn-outline-secondary btn-sm">Subscribed <strong>1.4M</strong></button></div>
+                        </div>
+                        <div class="channels-card-body">
+                            <div class="channels-title">
+                                <a href="#">The Travel Show<span title="" data-placement="top" data-toggle="tooltip" data-original-title="Verified"><i class="fas fa-check-circle"></i></span></a>
+                            </div>
+                            <div class="channels-view">
+                                382,323 subscribers
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 mb-3">
+                    <div class="channels-card">
+                        <div class="channels-card-image">
+                            <a href="#"><img class="img-fluid" src="img/s4.png" alt=""></a>
+                            <div class="channels-card-image-btn"><button type="button" class="btn btn-outline-danger btn-sm">Subscribe <strong>1.4M</strong></button></div>
+                        </div>
+                        <div class="channels-card-body">
+                            <div class="channels-title">
+                                <a href="#">JamJarJess Gamer Girl</a>
+                            </div>
+                            <div class="channels-view">
+                                382,323 subscribers
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+
+        <div>
+            Please connect to Ethereum !
+        </div>
+
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    bool EthereumAvailable { get; set; }
+    string SelectedAccount { get; set; }
+    long SelectedChainId { get; set; }
+    string BlockHash { get; set; }
+    string TransactionHash { get; set; }
+    string ErrorTransferMessage { get; set; }
+    string ErrorAuthenticateMessage { get; set; }
+    string UserName { get; set; }
+    string RecoveredAccount { get; set; }
+    string RecoveredAccountMessage { get; set; }
+    protected string AuthenticatedAccount { get; set; }
+    IEthereumHostProvider _ethereumHostProvider;
+
+    protected override void OnInitialized()
+    {
+        //metamask is selected
+        _ethereumHostProvider = selectedHostProviderService.SelectedHost;
+        _ethereumHostProvider.SelectedAccountChanged += HostProvider_SelectedAccountChanged;
+        _ethereumHostProvider.NetworkChanged += HostProvider_NetworkChanged;
+        _ethereumHostProvider.EnabledChanged += HostProviderOnEnabledChanged;
+    }
+
+    public void Dispose()
+    {
+        _ethereumHostProvider.SelectedAccountChanged -= HostProvider_SelectedAccountChanged;
+        _ethereumHostProvider.NetworkChanged -= HostProvider_NetworkChanged;
+        _ethereumHostProvider.EnabledChanged -= HostProviderOnEnabledChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        EthereumAvailable = await _ethereumHostProvider.CheckProviderAvailabilityAsync();
+        if (EthereumAvailable)
+        {
+            SelectedAccount = await _ethereumHostProvider.GetProviderSelectedAccountAsync();
+            await GetChainId();
+        }
+
+        var authState = await AuthenticationState; ;
+        if (authState != null)
+        {
+            UserName = authState.User.FindFirst(c => c.Type.Contains(ClaimTypes.NameIdentifier))?.Value;
+        }
+    }
+
+
+    private async Task HostProviderOnEnabledChanged(bool enabled)
+    {
+        if (enabled)
+        {
+            await GetChainId();
+            this.StateHasChanged();
+        }
+    }
+
+    private async Task GetChainId()
+    {
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+        var chainId = await web3.Eth.ChainId.SendRequestAsync();
+        SelectedChainId = (long)chainId.Value;
+    }
+
+    private async Task HostProvider_SelectedAccountChanged(string account)
+    {
+        SelectedAccount = account;
+        await GetChainId();
+        this.StateHasChanged();
+    }
+
+    private async Task HostProvider_NetworkChanged(long chainId)
+    {
+        SelectedChainId = chainId;
+        this.StateHasChanged();
+    }
+
+
+    protected async Task GetBlockHashAsync()
+    {
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+        var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(1));
+        BlockHash = block.BlockHash;
+    }
+
+    protected async Task SignAMessage()
+    {
+        RecoveredAccountMessage = "";
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+        var signature = await web3.Eth.AccountSigning.PersonalSign.SendRequestAsync(new HexUTF8String("Hello"));
+        RecoveredAccountMessage = new EthereumMessageSigner().EncodeUTF8AndEcRecover("Hello", signature);
+    }
+
+    protected async Task AddChain()
+    {
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+        var optimismChain = new AddEthereumChainParameter()
+            {
+                ChainId = new HexBigInteger(10),
+                ChainName = "Optimism",
+                NativeCurrency = new NativeCurrency()
+                {
+                    Decimals = 18,
+                    Name = "ETH",
+                    Symbol = "ETH"
+                },
+                RpcUrls = new List<string> { "https://mainnet.optimism.io", "https://rpc.ankr.com/optimism" },
+                BlockExplorerUrls = new List<string> { "https://optimistic.etherscan.io/" },
+
+            };
+        try
+        {
+            var result = await web3.Eth.HostWallet.AddEthereumChain.SendRequestAsync(optimismChain);
+        }
+        catch (Exception ex)
+        {
+
+        }
+    }
+
+    protected async Task SignV4()
+    {
+        RecoveredAccount = "";
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+
+
+        var typedData = GetMailTypedDefinition();
+
+        var mail = new Mail
+            {
+                From = new Person
+                {
+                    Name = "Cow",
+                    Wallets = new List<string> { "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826", "0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF" }
+                },
+                To = new List<Person>
+                {
+                    new Person
+                    {
+                        Name = "Bob",
+                        Wallets = new List<string> { "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB", "0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57", "0xB0B0b0b0b0b0B000000000000000000000000000" }
+                    }
+                },
+                Contents = "Hello, Bob!"
+            };
+
+        typedData.Domain.ChainId = 1;
+        typedData.SetMessage(mail);
+
+        var signature = await web3.Eth.AccountSigning.SignTypedDataV4.SendRequestAsync(typedData.ToJson());
+
+        RecoveredAccount = new Eip712TypedDataSigner().RecoverFromSignatureV4(typedData, signature);
+
+    }
+
+    protected async Task TransferEtherAsync()
+    {
+        try
+        {
+            var web3 = await _ethereumHostProvider.GetWeb3Async();
+
+            TransactionHash = await web3.Eth.GetEtherTransferService().TransferEtherAsync("0x13f022d72158410433cbd66f5dd8bf6d2d129924", 0.001m);
+        }
+        catch (Exception ex)
+        {
+            ErrorTransferMessage = ex.Message;
+        }
+    }
+
+
+
+    //The generic EIP712 Typed schema defintion for this message
+    public TypedData<Domain> GetMailTypedDefinition()
+    {
+        return new TypedData<Domain>
+            {
+                Domain = new Domain
+                {
+                    Name = "Ether Mail",
+                    Version = "1",
+                    ChainId = 1,
+                    VerifyingContract = "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+                },
+                Types = MemberDescriptionFactory.GetTypesMemberDescription(typeof(Domain), typeof(Group), typeof(Mail), typeof(Person)),
+                PrimaryType = nameof(Mail),
+            };
+    }
+
+}
