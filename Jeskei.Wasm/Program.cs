@@ -42,6 +42,9 @@ namespace JeskeiPortal.Wasm
 
             builder.Services.AddValidatorsFromAssemblyContaining<Nethereum.Erc20.Blazor.Erc20Transfer>();
 
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddScoped<IConfiguration>(sp => builder.Configuration);
+
             await builder.Build().RunAsync();
         }
     }

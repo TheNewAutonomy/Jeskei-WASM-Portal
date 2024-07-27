@@ -1,0 +1,59 @@
+﻿@page "/upload"
+@inject IJSRuntime JS
+@inject HttpClient Http
+@using Azure.Storage.Blobs
+@using System.IO
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+<h3>Upload Video</h3>
+
+<AuthorizeView Roles="EthereumConnected">
+    <Authorized>
+<input type="file" @ref="inputFile" />
+<button @onclick="UploadFile">Upload</button>
+    </Authorized>
+    <NotAuthorized>
+
+        <div style="text-align: center; margin:50px; color:red; font-size: 16px;" class="text-primary;">
+            Please connect to Ethereum !
+        </div>
+
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private ElementReference inputFile;
+
+    private async Task UploadFile()
+    {
+        // Get files using JS interop
+        var files = await JS.InvokeAsync<IJSObjectReference>("uploadHelper.getFiles", inputFile);
+        var length = await files.InvokeAsync<int>("get", "length");
+        if (length == 0) return;
+
+        var file = await files.InvokeAsync<IJSObjectReference>("get", 0);
+        var fileName = await file.InvokeAsync<string>("name");
+
+        var storageConnectionString = Configuration["AzureStorage:ConnectionString"];
+        var blobServiceClient = new BlobServiceClient(storageConnectionString);
+        var containerClient = blobServiceClient.GetBlobContainerClient("videos");
+
+        await containerClient.CreateIfNotExistsAsync();
+        var blobClient = containerClient.GetBlobClient(fileName);
+
+        // Read the file and upload it to Azure Blob Storage
+        using (var stream = await file.InvokeAsync<Stream>("stream"))
+        {
+            await blobClient.UploadAsync(stream);
+        }
+
+        await ProcessVideo(blobClient.Uri);
+    }
+
+    private async Task ProcessVideo(Uri videoUri)
+    {
+        var response = await Http.PostAsJsonAsync("api/media/process-video", videoUri);
+        response.EnsureSuccessStatusCode();
+    }
+}
