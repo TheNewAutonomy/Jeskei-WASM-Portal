@@ -1,24 +1,23 @@
 ﻿@page "/upload"
 @inject IJSRuntime JS
 @inject HttpClient Http
-@using Azure.Storage.Blobs
 @using System.IO
+@using Ipfs.Http
 @using Microsoft.Extensions.Configuration
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IConfiguration Configuration
 
 <h3>Upload Video</h3>
 
 <AuthorizeView Roles="EthereumConnected">
     <Authorized>
-<input type="file" @ref="inputFile" />
-<button @onclick="UploadFile">Upload</button>
+        <input type="file" @ref="inputFile" />
+        <button @onclick="UploadFile">Upload</button>
     </Authorized>
     <NotAuthorized>
-
         <div style="text-align: center; margin:50px; color:red; font-size: 16px;" class="text-primary;">
-            Please connect to Ethereum !
+            Please connect to Ethereum!
         </div>
-
     </NotAuthorized>
 </AuthorizeView>
 
@@ -27,28 +26,42 @@
 
     private async Task UploadFile()
     {
-        // Get files using JS interop
-        var files = await JS.InvokeAsync<IJSObjectReference>("uploadHelper.getFiles", inputFile);
-        var length = await files.InvokeAsync<int>("get", "length");
-        if (length == 0) return;
-
-        var file = await files.InvokeAsync<IJSObjectReference>("get", 0);
-        var fileName = await file.InvokeAsync<string>("name");
-
-        var storageConnectionString = Configuration["AzureStorage:ConnectionString"];
-        var blobServiceClient = new BlobServiceClient(storageConnectionString);
-        var containerClient = blobServiceClient.GetBlobContainerClient("videos");
-
-        await containerClient.CreateIfNotExistsAsync();
-        var blobClient = containerClient.GetBlobClient(fileName);
-
-        // Read the file and upload it to Azure Blob Storage
-        using (var stream = await file.InvokeAsync<Stream>("stream"))
+        try
         {
-            await blobClient.UploadAsync(stream);
-        }
+            // Get the file using JS interop
+            var file = await JS.InvokeAsync<IJSObjectReference>("uploadHelper.getFile", inputFile);
+            if (file == null)
+            {
+                Console.WriteLine("No file selected.");
+                return;
+            }
 
-        await ProcessVideo(blobClient.Uri);
+            var fileName = await file.InvokeAsync<string>("name");
+            var fileStream = await file.InvokeAsync<IJSStreamReference>("stream");
+
+            // Create an IPFS client instance
+            var ipfs = new IpfsClient("http://localhost:5001"); // Adjust the URL if needed
+
+            // Read the file and upload it to IPFS
+            using (var stream = await fileStream.OpenReadStreamAsync())
+            {
+                var node = await ipfs.FileSystem.AddAsync(stream, fileName);
+                Console.WriteLine("File uploaded successfully!");
+                Console.WriteLine("IPFS Hash (CID): " + node.Id);
+
+                // Process the video
+                await ProcessVideo(new Uri($"ipfs://{node.Id}"));
+
+                Console.WriteLine("Uploaded: ");
+                Console.WriteLine(node.Id);
+            }
+
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("An error occurred while uploading the file to IPFS: " + ex.Message);
+        }
     }
 
     private async Task ProcessVideo(Uri videoUri)
