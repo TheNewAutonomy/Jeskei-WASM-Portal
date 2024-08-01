@@ -1,11 +1,26 @@
 ﻿@page "/upload"
+@using Nethereum.ABI.EIP712
+@using Nethereum.ABI.FunctionEncoding.Attributes
+@using Nethereum.Erc20.Blazor;
+@implements IDisposable;
+@inject IJSRuntime jsRuntime;
+@inject SelectedEthereumHostProviderService selectedHostProviderService
+@inject NavigationManager _navigationManager
+@inject AuthenticationStateProvider _siweAuthenticationStateProvider;
+@using Nethereum.Hex.HexTypes;
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Nethereum.RPC.HostWallet
+@using Nethereum.Signer
+@using Nethereum.Signer.EIP712
+
 @inject IJSRuntime JS
 @inject HttpClient Http
 @using System.IO
 @using Ipfs.Http
 @using Microsoft.Extensions.Configuration
-@using Microsoft.AspNetCore.Components.Authorization
 @inject IConfiguration Configuration
+@using System.Text
 
 <h3>Upload Video</h3>
 
@@ -22,41 +37,158 @@
 </AuthorizeView>
 
 @code {
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    bool EthereumAvailable { get; set; }
+    string SelectedAccount { get; set; }
+    long SelectedChainId { get; set; }
+    string BlockHash { get; set; }
+    string TransactionHash { get; set; }
+    string ErrorTransferMessage { get; set; }
+    string ErrorAuthenticateMessage { get; set; }
+    string UserName { get; set; }
+    string RecoveredAccount { get; set; }
+    string RecoveredAccountMessage { get; set; }
+    protected string AuthenticatedAccount { get; set; }
+    IEthereumHostProvider _ethereumHostProvider;
+
+    protected override void OnInitialized()
+    {
+        //metamask is selected
+        _ethereumHostProvider = selectedHostProviderService.SelectedHost;
+        _ethereumHostProvider.SelectedAccountChanged += HostProvider_SelectedAccountChanged;
+        _ethereumHostProvider.NetworkChanged += HostProvider_NetworkChanged;
+        _ethereumHostProvider.EnabledChanged += HostProviderOnEnabledChanged;
+    }
+
+    public void Dispose()
+    {
+        _ethereumHostProvider.SelectedAccountChanged -= HostProvider_SelectedAccountChanged;
+        _ethereumHostProvider.NetworkChanged -= HostProvider_NetworkChanged;
+        _ethereumHostProvider.EnabledChanged -= HostProviderOnEnabledChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        EthereumAvailable = await _ethereumHostProvider.CheckProviderAvailabilityAsync();
+        if (EthereumAvailable)
+        {
+            SelectedAccount = await _ethereumHostProvider.GetProviderSelectedAccountAsync();
+            await GetChainId();
+        }
+
+        var authState = await AuthenticationState; ;
+        if (authState != null)
+        {
+            UserName = authState.User.FindFirst(c => c.Type.Contains(ClaimTypes.NameIdentifier))?.Value;
+        }
+    }
+
+
+    private async Task HostProviderOnEnabledChanged(bool enabled)
+    {
+        if (enabled)
+        {
+            await GetChainId();
+            this.StateHasChanged();
+        }
+    }
+
+    private async Task GetChainId()
+    {
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+        var chainId = await web3.Eth.ChainId.SendRequestAsync();
+        SelectedChainId = (long)chainId.Value;
+    }
+
+    private async Task HostProvider_SelectedAccountChanged(string account)
+    {
+        SelectedAccount = account;
+        await GetChainId();
+        this.StateHasChanged();
+    }
+
+    private async Task HostProvider_NetworkChanged(long chainId)
+    {
+        SelectedChainId = chainId;
+        this.StateHasChanged();
+    }
+
+    protected async Task GetBlockHashAsync()
+    {
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+        var block = await web3.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(new HexBigInteger(1));
+        BlockHash = block.BlockHash;
+    }
+
+    protected async Task SignAMessage()
+    {
+        RecoveredAccountMessage = "";
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+        var signature = await web3.Eth.AccountSigning.PersonalSign.SendRequestAsync(new HexUTF8String("Hello"));
+        RecoveredAccountMessage = new EthereumMessageSigner().EncodeUTF8AndEcRecover("Hello", signature);
+    }
+
+    protected async Task AddChain()
+    {
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+        var optimismChain = new AddEthereumChainParameter() {
+                ChainId = new HexBigInteger(10), ChainName = "Optimism", NativeCurrency = new NativeCurrency()
+                {
+                    Decimals = 18,
+                    Name = "ETH",
+                    Symbol = "ETH"
+                },
+                RpcUrls = new List<string> { "https://mainnet.optimism.io", "https://rpc.ankr.com/optimism" },
+                BlockExplorerUrls = new List<string> { "https://optimistic.etherscan.io/"},
+
+            };
+        try
+        {
+            var result = await web3.Eth.HostWallet.AddEthereumChain.SendRequestAsync(optimismChain);
+        }
+        catch(Exception ex)
+        {
+            
+        }
+    }
+
     private ElementReference inputFile;
 
     private async Task UploadFile()
     {
         try
         {
-            // Get the file using JS interop
-            var file = await JS.InvokeAsync<IJSObjectReference>("uploadHelper.getFile", inputFile);
+            // Get the file details using JS interop
+            var file = await JS.InvokeAsync<FileData>("uploadHelper.getFile", inputFile);
             if (file == null)
             {
                 Console.WriteLine("No file selected.");
                 return;
             }
 
-            var fileName = await file.InvokeAsync<string>("name");
-            var fileStream = await file.InvokeAsync<IJSStreamReference>("stream");
+            var fileName = file.Name;
+
+            // Get the file content as a Base64 string using JS interop
+            var base64String = await JS.InvokeAsync<string>("uploadHelper.readFileAsBase64", inputFile);
+
+            // Convert Base64 string to byte array
+            var byteArray = Convert.FromBase64String(base64String);
+
+            // Convert byte array to stream
+            using var stream = new MemoryStream(byteArray);
 
             // Create an IPFS client instance
             var ipfs = new IpfsClient("http://localhost:5001"); // Adjust the URL if needed
 
-            // Read the file and upload it to IPFS
-            using (var stream = await fileStream.OpenReadStreamAsync())
-            {
-                var node = await ipfs.FileSystem.AddAsync(stream, fileName);
-                Console.WriteLine("File uploaded successfully!");
-                Console.WriteLine("IPFS Hash (CID): " + node.Id);
+            // Upload the file to IPFS
+            var node = await ipfs.FileSystem.AddAsync(stream, fileName);
+            Console.WriteLine("File uploaded successfully!");
+            Console.WriteLine("IPFS Hash (CID): " + node.Id);
 
-                // Process the video
-                await ProcessVideo(new Uri($"ipfs://{node.Id}"));
-
-                Console.WriteLine("Uploaded: ");
-                Console.WriteLine(node.Id);
-            }
-
-            
+            // Process the video
+            await RecordVideoOwnership(new Uri($"ipfs://{node.Id}"));
         }
         catch (Exception ex)
         {
@@ -64,9 +196,42 @@
         }
     }
 
-    private async Task ProcessVideo(Uri videoUri)
+    private async Task RecordVideoOwnership(Uri videoUri)
     {
-        var response = await Http.PostAsJsonAsync("api/media/process-video", videoUri);
-        response.EnsureSuccessStatusCode();
+        var contractAddress = Configuration["ContractAddress"];
+        var contractAbi = Configuration["ContractAbi"];
+
+        var web3 = await _ethereumHostProvider.GetWeb3Async();
+
+        // Load the contract
+        var contract = web3.Eth.GetContract(contractAbi, contractAddress);
+
+        // Call the recordVideoOwnership function
+        var transactionHash = await contract.GetFunction("recordVideoOwnership")
+            .SendTransactionAsync(SelectedAccount, videoUri);
+
+        Console.WriteLine("Transaction hash: " + transactionHash);
+
+        // Wait for the transaction to be mined
+        var receipt = await web3.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(transactionHash);
+        Console.WriteLine("Transaction mined!");
+
+        // Check the status of the transaction
+        if (receipt.Status.Value == 1)
+        {
+            Console.WriteLine("Transaction successful!");
+        }
+        else
+        {
+            Console.WriteLine("Transaction failed!");
+        }
+    }
+
+    private class FileData
+    {
+        public string Name { get; set; }
+        public long Size { get; set; }
+        public string Type { get; set; }
+        public long LastModified { get; set; }
     }
 }
